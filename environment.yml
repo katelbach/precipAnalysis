@@ -11,5 +11,9 @@ dependencies:
   - scipy
   - pyproj
   - xarray
+  - netcdf4
+  - h5netcdf
   - cfgrib
   - cmocean
+  - pyextremes
+  - metpy

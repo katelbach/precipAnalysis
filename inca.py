@@ -24,10 +24,11 @@ lon_min, lon_max = (16.10, 16.67)
 
 
 def get_shapes():
-    shpfile_countries = Path('SHP_countries/LINIEN_050Line.shp')
-    shpfile_provinces = Path('SHP_provinces/LINIEN_050Line.shp')
-    shpfile_districts = Path('SHP_districts/STATISTIK_AUSTRIA_POLBEZ_20230101.shp')
-    shpfile_rivers = Path('SHP_rivers/Routen.shp')
+    shpfile_countries = Path('assets/SHP_countries/LINIEN_050Line.shp')
+    shpfile_provinces = Path('assets/SHP_provinces/LINIEN_050Line.shp')
+    shpfile_districts = Path(
+        'assets/SHP_districts/STATISTIK_AUSTRIA_POLBEZ_20230101.shp')
+    shpfile_rivers = Path('assets/SHP_rivers/Routen.shp')
 
     uba_crs = ccrs.LambertConformal(
         central_longitude=13.3333, central_latitude=47.5, false_easting=400000,
@@ -81,7 +82,7 @@ def plot_inca(ds, time0, time1, title, station_data=None, filename=None,
 
     ds_sum['RR'].plot.contour(
         transform=ccrs.epsg(31287), ax=ax, levels=[50, 75, 100],
-        linewidths=2, colors=[c50, c75, c100])
+        linewidths=3, colors=[c50, c75, c100], zorder=11)
 
 
     for threshold, color in zip([50, 75, 100], [c50, c75, c100]):
@@ -89,14 +90,14 @@ def plot_inca(ds, time0, time1, title, station_data=None, filename=None,
         areatext = f"> {threshold} mm: {area} km²"
         if threshold == 50:
             text = ax.text(
-                0.01, 0.01, areatext, color=color, fontweight='bold',
-                bbox={'facecolor': 'white', 'pad': 1.5},
+                0, 0.01, areatext, color=color, fontweight='bold', zorder=15,
+                bbox={'facecolor': 'white', 'pad': 1.5, 'zorder': 14},
                 transform=ax.transAxes)
         else:
             text = ax.annotate(
                 areatext, xycoords=text, xy=(0, 1.25), verticalalignment="bottom",
-                color=color, fontweight='bold',
-                bbox={'facecolor': 'w', 'pad': 1.5})
+                color=color, fontweight='bold', zorder=15,
+                bbox={'facecolor': 'w', 'pad': 1.5, 'zorder': 14})
 
 
     ax.set_title(title)
@@ -107,9 +108,9 @@ def plot_inca(ds, time0, time1, title, station_data=None, filename=None,
 
     # plot background shapes
     countries, provinces, districts, rivers = get_shapes()
-    ax.add_feature(countries, linewidth=2, edgecolor='r',
+    ax.add_feature(countries, linewidth=3, edgecolor='r',
                    facecolor='none', zorder=3)
-    ax.add_feature(provinces, linewidth=1, edgecolor='k',
+    ax.add_feature(provinces, linewidth=2.5, edgecolor='k',
                    facecolor='none', zorder=2)
     ax.add_feature(rivers, linewidth=2, edgecolor='dodgerblue',
                    facecolor='none', zorder=1)

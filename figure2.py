@@ -16,7 +16,7 @@ def figure2():
 
     # FIG 1: Time series Vienna H.W.
     initialize_mpl_style()
-    fontsize_labels = 16
+    fontsize_labels = 12
     ylim = [0, 115]
 
     fig = plt.figure(figsize=(10, 5))

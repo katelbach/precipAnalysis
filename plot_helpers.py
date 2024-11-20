@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib import font_manager
 
 
 def initialize_mpl_style():
@@ -16,4 +17,10 @@ def initialize_mpl_style():
          'axes.axisbelow': True
          }
     )
-    #plt.rcParams["font.family"] = "Arial"
+
+    font_dir = "assets/font"
+    font_files = font_manager.findSystemFonts(fontpaths=font_dir)
+    for font_file in font_files:
+        font_manager.fontManager.addfont(font_file)
+
+    plt.rcParams["font.family"] = "Lato"

@@ -26,11 +26,13 @@ def figure3():
     pm = plot_inca(
         inca_ds, time0, time1, "", filename=None, ax=ax1, add_colorbar=True,
         cbar_kwargs={'extend': 'both', 'label': '2 hour precipitation [mm]',
-                     'location': 'bottom'})
+                     'location': 'bottom', 'drawedges': True})
+    pm.colorbar.ax.tick_params(labelsize=13)
     plot_tawes_locations(ax1, station_data, pm.get_cmap(), pm.norm)
-    ax1.text(0.01, 1, f"a) {time0:%Y-%m-%d %H:%M}", fontweight='bold',
-            transform=ax1.transAxes, verticalalignment='top', fontsize=18,
-            horizontalalignment='left', bbox={'facecolor': 'w', 'pad': 1})
+    ax1.text(0, 1, f"a) {time0:%Y-%m-%d %H:%M}", fontweight='bold',
+             transform=ax1.transAxes, verticalalignment='top', fontsize=16,
+             zorder=15, horizontalalignment='left',
+             bbox={'facecolor': 'w', 'pad': 1, 'zorder': 14})
     ax1.axis('off')
 
     old_events = [
@@ -55,8 +57,9 @@ def figure3():
                   add_colorbar=False, y=(460000, 503000))
         plot_tawes_locations(ax, station_data, pm.get_cmap(), pm.norm)
         ax.text(0.01, 1, f"{label[i]} {time0:%Y-%m-%d %H:%M}", fontweight='bold',
-                transform=ax.transAxes, verticalalignment='top', fontsize=18,
-                horizontalalignment='left', bbox={'facecolor': 'w', 'pad': 1})
+                transform=ax.transAxes, verticalalignment='top', fontsize=16,
+                horizontalalignment='left', zorder=15,
+                bbox={'facecolor': 'w', 'pad': 1, 'zorder': 14})
 
     plt.savefig("output/figure3.png", dpi=200, bbox_inches='tight')
     plt.close()
@@ -67,7 +70,7 @@ def plot_tawes_locations(ax, station_data, cmap, norm):
 
     lon, lat, rr = (station_data['lon'], station_data['lat'], station_data['rr'])
     ax.scatter(lon, lat, s=70, c=rr, transform=ccrs.PlateCarree(), cmap=cmap,
-               norm=norm, edgecolors='w', linewidth=1.6)
+               norm=norm, edgecolors='w', linewidth=1.6, zorder=12)
     return ax
 
 
