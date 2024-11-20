@@ -16,4 +16,4 @@ def initialize_mpl_style():
          'axes.axisbelow': True
          }
     )
-    plt.rcParams["font.family"] = "Arial"
+    #plt.rcParams["font.family"] = "Arial"
