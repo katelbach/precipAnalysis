@@ -1,9 +1,18 @@
 import xarray as xr
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from scipy.ndimage import gaussian_filter
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
+
+
+import requests
+import matplotlib.transforms as transforms
+
+import metpy.calc as mpcalc
+from metpy.plots import Hodograph, SkewT
+from metpy.units import units
 
 from plot_helpers import initialize_mpl_style
 
@@ -110,6 +119,123 @@ def prepare_grib_dataset(ds, xlim, ylim):
                 latitude=slice(ylim[0], ylim[1]))
 
     return ds
+
+
+def plot_radiosonde():
+
+        if fig is None:
+            fig = plt.figure(figsize=(9, 9))
+
+        if time.minute != 0:
+            raise ValueError('Radiosonde not available at minute: ',
+                             time.minute)
+
+        if time.hour not in [0, 6, 12, 18]:
+            raise ValueError('Radiosonde not available at hour: ', time.hour)
+
+        url = reader_radiosonde.construct_url(time)
+        r = requests.get(url, allow_redirects=True)
+        html = r.text
+        df = reader_radiosonde.get_radiosonde_data_from_html(html)
+
+        # Drop any rows with all NaN values for T, Td, winds
+        df = df.dropna(subset=('TEMP', 'DWPT', 'DRCT', 'SPED'),
+                       how='all').reset_index(drop=True)
+
+        # filter for same pressure values
+        p = df['PRES'].values * units.hPa
+        p_diff = np.diff(p, append=p[-1])
+        mask = p_diff != 0
+        df = df[mask]
+
+        p = df['PRES'].values * units.hPa
+        T = df['TEMP'].values * units.degC
+        Td = df['DWPT'].values * units.degC
+        hght = df['HGHT'].values * units.m
+        wind_speed = df['SPED'].values * units('m/s')
+        wind_speed = wind_speed.to('knots')
+        wind_dir = df['DRCT'].values * units.degrees
+        u, v = mpcalc.wind_components(wind_speed, wind_dir)
+
+        # Calculate the LCL
+        lcl_pressure, lcl_temperature = mpcalc.lcl(p[0], T[0], Td[0])
+
+        # Calculate the parcel profile.
+        parcel_prof = mpcalc.parcel_profile(p, T[0], Td[0]).to('degC')
+
+        # Create a new figure. The dimensions here give a good aspect ratio
+        skew = SkewT(fig, rotation=45, subplot=subplot)
+
+        # Plot the data using normal plotting functions, in this case using
+        # log scaling in Y, as dictated by the typical meteorological plot
+        skew.plot(p, T, 'r')
+        skew.plot(p, Td, 'g')
+        skew.plot_barbs(p[p.m > 110][::80], u[p.m > 110][::80],
+                        v[p.m > 110][::80])
+
+        skew.ax.set_ylim(1000, 100)
+        skew.ax.set_xlim(-30, 50)
+
+        skew.ax.set_xlabel('Temperature [°C]')
+        skew.ax.set_ylabel('Pressure [hPa]')
+
+        # Plot LCL temperature as black dot
+        # skew.plot(lcl_pressure, lcl_temperature, 'ko', markerfacecolor='black')
+
+        # Plot the parcel profile as a black line
+        skew.plot(p, parcel_prof, 'k', linewidth=1.5, alpha=0.8)
+
+        # Shade areas of CAPE and CIN
+        # skew.shade_cin(p, T, parcel_prof, Td)
+        skew.shade_cape(p, T, parcel_prof, alpha=0.2)
+
+        # Plot a zero degree isotherm
+        # skew.ax.axvline(0, color='c', linestyle='--', linewidth=1.5)
+
+        # Add the relevant special lines
+        skew.plot_dry_adiabats(alpha=0.4, linewidth=1)
+        skew.plot_moist_adiabats(alpha=0.4, linewidth=1)
+        skew.plot_mixing_lines(alpha=0.4, linewidth=1)
+
+        # add height in [m] for certain pressure levels
+        critical_pressure_levels = np.array([900, 850, 700, 500, 400, 300, 200])
+        pressure_idx = _closest_argmin(critical_pressure_levels, p.m)
+        p_critical = p.m[pressure_idx]
+        hght_critical = hght.m[pressure_idx]
+
+        trans = transforms.blended_transform_factory(
+            skew.ax.transAxes, skew.ax.transData)
+
+        for pcrit, hcrit in zip(p_critical, hght_critical):
+            skew.ax.text(0.02, pcrit, str(hcrit), color='grey', transform=trans,
+                         fontsize=8)
+
+        # Create a hodograph
+        # ax_hod = inset_axes(skew.ax, '30%', '30%', loc=1)
+        ax_hod = skew.ax.inset_axes([0.65, 0.72, 0.26, 0.26])
+
+        h = Hodograph(ax_hod, component_range=40.)
+        h.add_grid(increment=20)
+        h.plot_colormapped(u[p.m > 300][::30], v[p.m > 300][::30],
+                           hght[p.m > 300][::30])
+
+        for spine in ax_hod.spines.values():
+            spine.set_linewidth(0.6)
+            spine.set_color('black')
+
+        for tick in [0, 20, 40]:
+            ax_hod.text(tick - 4, -8, tick)
+
+        ax_hod.set_xlim([-15, 45])
+
+        ax_hod.get_xaxis().set_visible(False)
+        ax_hod.get_yaxis().set_visible(False)
+
+        if title:
+            skew.ax.set_title('Vienna', loc='left', fontsize=14)
+            skew.ax.set_title(f"{time:%d %b %Y %H%M UTC}", loc='right',
+                              fontsize=14)
+    return
 
 
 if __name__ == '__main__':

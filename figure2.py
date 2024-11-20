@@ -78,6 +78,7 @@ def plot_timeseries(df, ax=None):
     min_year = rr_2h.index.year.min()
     max_year = rr_2h.index.year.max()
 
+    # plot vertical lines every 10 years
     for yr in range(int(np.ceil(min_year/10) * 10), max_year+1, 10):
         ax.axvline(dt.datetime(yr, 1, 1), lw=0.3, color="k", alpha=0.5,
                    zorder=5)
@@ -99,6 +100,8 @@ def plot_return_levels(model, ax=None):
     model.plot_return_values(ax=ax, alpha=0.95,
                              return_period=return_period_steps)
     ax.set_xticks([1, 2, 5, 10, 30, 50, 100, 200, 500])
+    ax.xaxis.grid(False, which='both')
+    ax.xaxis.grid()
 
     return ax
 
