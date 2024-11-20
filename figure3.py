@@ -1,10 +1,9 @@
-from pathlib import Path
 import datetime as dt
 import pandas as pd
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 
-from inca import plot_inca, get_json_data, read_binary_format
+from inca import plot_inca, read_binary_format
 from tawes import read_json_data
 
 # FIG2: 5 subplots, left big: Main event, right small: four next-largest events (sorted by max 2h RR)

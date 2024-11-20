@@ -8,7 +8,7 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 
 import metpy.calc as mpcalc
-from metpy.plots import Hodograph, SkewT
+from metpy.plots import SkewT
 from metpy.units import units
 
 from plot_helpers import initialize_mpl_style
