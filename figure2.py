@@ -91,7 +91,8 @@ def plot_timeseries(df, ax=None):
 def plot_return_levels(model, ax=None):
 
     return_period_steps = [1.01, 1.05, 1.1, 1.2, 1.4, 1.55, 1.68, 2, 3, 4, 5,
-                           7, 10, 15, 25, 35, 50, 75, 100, 150, 200, 300, 400, 500]
+                           7, 10, 15, 25, 35, 50, 75, 100, 150, 200, 300, 400,
+                           500, 600, 700]
 
     if ax is None:
         fig = plt.figure(figsize=(8, 6))

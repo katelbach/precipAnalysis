@@ -32,6 +32,8 @@ def figure3():
              transform=ax1.transAxes, verticalalignment='top', fontsize=17,
              zorder=15, horizontalalignment='left',
              bbox={'facecolor': 'w', 'pad': 1, 'zorder': 14})
+    ax1.text(16.09, 48.15, 'V i e n n a   w o o d s', fontsize=15, rotation=64,
+             ha='left', style='italic', transform=ccrs.PlateCarree())
     ax1.axis('off')
 
     old_events = [
