@@ -29,7 +29,7 @@ def figure3():
                      'location': 'bottom', 'drawedges': True})
     pm.colorbar.ax.tick_params(labelsize=15)
     #plot_tawes_locations(ax1, station_data, pm.get_cmap(), pm.norm)
-    ax1.text(0, 1, f"(a) {time0:%Y-%m-%d %H:%M}", fontweight='bold',
+    ax1.text(0, 1, f"(a) {time1:%Y-%m-%d %H:%M}", fontweight='bold',
              transform=ax1.transAxes, verticalalignment='top', fontsize=17,
              zorder=15, horizontalalignment='left',
              bbox={'facecolor': 'w', 'pad': 1, 'zorder': 14})
@@ -58,8 +58,7 @@ def figure3():
         plot_inca(inca_ds, time0, time1, "", filename=None, ax=ax,
                        add_colorbar=False, y=(460000, 503000),
                        station_data=station_data)
-        #plot_tawes_locations(ax, station_data, pm.get_cmap(), pm.norm)
-        ax.text(0.01, 1, f"{label[i]} {time0:%Y-%m-%d %H:%M}", fontweight='bold',
+        ax.text(0.01, 1, f"{label[i]} {time1:%Y-%m-%d %H:%M}", fontweight='bold',
                 transform=ax.transAxes, verticalalignment='top', fontsize=17,
                 horizontalalignment='left', zorder=15,
                 bbox={'facecolor': 'w', 'pad': 1, 'zorder': 14})
