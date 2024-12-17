@@ -99,12 +99,21 @@ def plot_inca(ds, time0, time1, title, station_data=None, filename=None,
                 color=color, fontweight='bold', zorder=15,
                 bbox={'facecolor': 'w', 'pad': 1.5, 'zorder': 14})
 
+    text = ax.text(
+        1, 0.01, f"INCA {ds_sum['RR'].max().values:.0f} mm",
+        ha="right", color='k', fontweight='bold', zorder=15,
+        bbox={'facecolor': 'w', 'pad': 1.5, 'zorder': 14})
+
+    text = ax.annotate(
+        f"TAWES {station_data['rr'].max():.0f} mm", xycoords=text, xy=(0, 1.25),
+        va='bottom', ha='right', color='k', fontweight='bold', zorder=15,
+        bbox={'facecolor': 'w', 'pad': 1.5, 'zorder': 14})
 
     ax.set_title(title)
 
-    if station_data:
+    if station_data is not None:
         # plot TAWES locations
-        plot_tawes_data(ax, station_data)
+        plot_tawes(ax, station_data, pm.get_cmap(), pm.norm)
 
     # plot background shapes
     countries, provinces, districts, rivers = get_shapes()
@@ -123,16 +132,23 @@ def plot_inca(ds, time0, time1, title, station_data=None, filename=None,
 
     return pm
 
-def plot_tawes_data(ax, station_data):
 
-    for station in station_data:
-        lon, lat = (station_data[station]['lon'], station_data[station]['lat'])
-        rr = np.round(station_data[station]['rr'], 1)
-        ax.scatter(lon, lat, color='k',transform=ccrs.PlateCarree())
-        ax.text(lon, lat+0.004, rr, ha='center', fontsize=12,
-                transform=ccrs.PlateCarree())
+def plot_tawes(ax, station_data, cmap, norm):
 
-    return
+    lon, lat, rr = (station_data['lon'], station_data['lat'], station_data['rr'])
+    ax.scatter(lon, lat, s=70, c=rr, transform=ccrs.PlateCarree(), cmap=cmap,
+               norm=norm, edgecolors='w', linewidth=1.6, zorder=12)
+    return ax
+
+# def plot_tawes_data(ax, station_data):
+#
+#     for station in station_data:
+#         lon, lat = (station_data[station]['lon'], station_data[station]['lat'])
+#         rr = np.round(station_data[station]['rr'], 1)
+#         ax.scatter(lon, lat, color='k',transform=ccrs.PlateCarree())
+#         ax.text(lon, lat+0.004, rr, ha='center', fontsize=12,
+#                 transform=ccrs.PlateCarree())
+#     return
 
 
 def read_binary_format(inca_path, time0, time1):
