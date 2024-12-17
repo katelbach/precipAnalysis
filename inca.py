@@ -99,15 +99,13 @@ def plot_inca(ds, time0, time1, title, station_data=None, filename=None,
                 color=color, fontweight='bold', zorder=15,
                 bbox={'facecolor': 'w', 'pad': 1.5, 'zorder': 14})
 
+    maxtext = (f"INCA {ds_sum['RR'].max().values:.0f} mm\n"
+               f"TAWES {station_data['rr'].max():.0f} mm")
     text = ax.text(
-        1, 0.01, f"INCA {ds_sum['RR'].max().values:.0f} mm",
-        ha="right", color='k', fontweight='bold', zorder=15,
-        bbox={'facecolor': 'w', 'pad': 1.5, 'zorder': 14})
-
-    text = ax.annotate(
-        f"TAWES {station_data['rr'].max():.0f} mm", xycoords=text, xy=(0, 1.25),
-        va='bottom', ha='right', color='k', fontweight='bold', zorder=15,
-        bbox={'facecolor': 'w', 'pad': 1.5, 'zorder': 14})
+        1, 0, maxtext,
+        color='k', fontweight='bold', ha="right", va="bottom", zorder=15,
+        bbox={'facecolor': 'w', 'pad': 0.5, 'zorder': 14},
+        transform=ax.transAxes)
 
     ax.set_title(title)
 
