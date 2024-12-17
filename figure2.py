@@ -25,7 +25,7 @@ def figure2():
     ax1.set_ylim(ylim)
     ax1.set_xlabel('Year', fontsize=fontsize_labels)
     ax1.set_ylabel('mm', fontsize=fontsize_labels)
-    ax1.text(0, 1, 'a) Annual max 2h RR', ha='left', va='top',
+    ax1.text(0, 1, '(a) Annual max 2h RR', ha='left', va='top',
              transform=ax1.transAxes,
              zorder=12, fontweight='bold',
              bbox=dict(facecolor='w', edgecolor='none'))
@@ -35,13 +35,14 @@ def figure2():
     ax2.set_ylim(ylim)
     ax2.set_xlabel('Years', fontsize=fontsize_labels)
     ax2.set_ylabel(None)
-    ax2.text(0, 1, 'b) Return periods 2h RR', ha='left', va='top',
+    ax2.text(0, 1, '(b) Return periods 2h RR', ha='left', va='top',
              transform=ax2.transAxes,
              zorder=12, fontweight='bold',
              bbox=dict(facecolor='w', edgecolor='none'))
 
     plt.tight_layout()
-    plt.savefig("output/figure2.png", dpi=200, bbox_inches='tight')
+    plt.savefig("output/figure2.pdf", format="pdf", dpi=300,
+                bbox_inches='tight')
     plt.close()
 
     return

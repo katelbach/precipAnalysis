@@ -28,7 +28,7 @@ def figure3():
                      'location': 'bottom', 'drawedges': True})
     pm.colorbar.ax.tick_params(labelsize=15)
     plot_tawes_locations(ax1, station_data, pm.get_cmap(), pm.norm)
-    ax1.text(0, 1, f"a) {time0:%Y-%m-%d %H:%M}", fontweight='bold',
+    ax1.text(0, 1, f"(a) {time0:%Y-%m-%d %H:%M}", fontweight='bold',
              transform=ax1.transAxes, verticalalignment='top', fontsize=17,
              zorder=15, horizontalalignment='left',
              bbox={'facecolor': 'w', 'pad': 1, 'zorder': 14})
@@ -46,7 +46,7 @@ def figure3():
     axs2 = subfigs[1].subplots(2, 2,
                                subplot_kw=dict(projection=ccrs.epsg(31287)))
 
-    label = ["b)", "c)", "d)", "e)"]
+    label = ["(b)", "(c)", "(d)", "(e)"]
     for i, ax in enumerate(axs2.flatten()):
         time0 = old_events[i]
         time1 = time0 + dt.timedelta(hours=2)
@@ -62,7 +62,7 @@ def figure3():
                 horizontalalignment='left', zorder=15,
                 bbox={'facecolor': 'w', 'pad': 1, 'zorder': 14})
 
-    plt.savefig("output/figure3.png", dpi=200, bbox_inches='tight')
+    plt.savefig("output/figure3.png", dpi=300, bbox_inches='tight')
     plt.close()
 
     return

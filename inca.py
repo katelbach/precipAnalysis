@@ -182,38 +182,58 @@ def read_binary_format(inca_path, time0, time1):
 
     return data
 
+def export_to_netcdf():
+    start = dt.datetime(2023, 4, 1)
+    end = dt.datetime(2023, 5, 1)
+    current_day = start
+    encode = {'RR': {'zlib': True, 'complevel': 9}}
+
+    while current_day < end:
+        inca_path = Path("data", f"{current_day:%Y}", f"{current_day:%Y%m%d}")
+        print("processing", current_day)
+        time0 = current_day
+        time1 = current_day + dt.timedelta(hours=23, minutes=59)
+
+        daily_data = read_binary_format(inca_path, time0, time1)
+        daily_data.to_netcdf(Path("output", "INCA", f"{current_day:%Y%m%d}.nc"), encoding=encode)
+
+        current_day += dt.timedelta(days=1)
+    return
+
 
 if __name__ == '__main__':
 
-    event_starttimes = [
-        dt.datetime(2003, 5, 13, 13, 0),
-        dt.datetime(2004, 7, 1, 14, 0),
-        dt.datetime(2007, 8, 9, 17, 0),
-        dt.datetime(2008, 4, 22, 14, 0),
-        dt.datetime(2008, 5, 18, 13, 0),
-        dt.datetime(2010, 5, 13, 14, 0),
-        dt.datetime(2011, 6, 8, 11, 0),
-        dt.datetime(2011, 7, 28, 10, 0)
+    export_to_netcdf()
 
-        # dt.datetime(2014, 4, 29, 13, 0),
-        # dt.datetime(2014, 5, 24, 13, 0),
-        # dt.datetime(2018, 5, 2, 19, 0),
-        # dt.datetime(2021, 7, 17, 18, 0),
-        # dt.datetime(2024, 8, 17, 14, 0)
-    ]
+    # event_starttimes = [
+    #     dt.datetime(2003, 5, 13, 13, 0),
+    #     dt.datetime(2004, 7, 1, 14, 0),
+    #     dt.datetime(2007, 8, 9, 17, 0),
+    #     dt.datetime(2008, 4, 22, 14, 0),
+    #     dt.datetime(2008, 5, 18, 13, 0),
+    #     dt.datetime(2010, 5, 13, 14, 0),
+    #     dt.datetime(2011, 6, 8, 11, 0),
+    #     dt.datetime(2011, 7, 28, 10, 0)
+    #
+    #     # dt.datetime(2014, 4, 29, 13, 0),
+    #     # dt.datetime(2014, 5, 24, 13, 0),
+    #     # dt.datetime(2018, 5, 2, 19, 0),
+    #     # dt.datetime(2021, 7, 17, 18, 0),
+    #     # dt.datetime(2024, 8, 17, 14, 0)
+    # ]
 
-    for time0 in event_starttimes:
-        time1 = time0 + dt.timedelta(hours=2)
-
-        if Path(f"data/{time0:%Y%m%d}/tawes.json").exists():
-            pass
-        else:
-            get_json_data(time0, time1)
-        station_data = read_json_data(f"data/{time0:%Y%m%d}/tawes.json")
-        ds = read_binary_format(f"data/{time0:%Y%m%d}",
-                                time0 + dt.timedelta(minutes=15),
-                                time1)
-        plot_title = f"{time0:%Y%m%d %H%M}-{time1:%H%M} UTC"
-        plot_inca(ds, time0, time1, plot_title,
-                  filename=f'output/INCA_RR_{time0:%Y%m%d}.png',
-                  station_data=station_data)
+    # for time0 in event_starttimes:
+    #     time1 = time0 + dt.timedelta(hours=2)
+    #
+    #     if Path(f"data/{time0:%Y%m%d}/tawes.json").exists():
+    #         pass
+    #     else:
+    #         get_json_data(time0, time1)
+    #     station_data = read_json_data(f"data/{time0:%Y%m%d}/tawes.json")
+    #     ds = read_binary_format(f"data/{time0:%Y%m%d}",
+    #                             time0 + dt.timedelta(minutes=15),
+    #                             time1)
+    #     plot_title = f"{time0:%Y%m%d %H%M}-{time1:%H%M} UTC"
+    #     plot_inca(ds, time0, time1, plot_title,
+    #               filename=f'output/INCA_RR_{time0:%Y%m%d}.png',
+    #               station_data=station_data)

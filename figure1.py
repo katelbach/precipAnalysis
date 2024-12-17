@@ -68,7 +68,7 @@ def figure1():
     ax1.clabel(con2, con2.levels, fontsize=16, inline=1, inline_spacing=-13,
                fmt='%i', rightside_up=True)
 
-    ax1.text(0, 1, f"a) RelTop/MSLP/500 hPa Geopot", fontweight='bold',
+    ax1.text(0, 1, f"(a) RelTop/MSLP/500 hPa Geopot", fontweight='bold',
              transform=ax1.transAxes, verticalalignment='top', fontsize=20,
              horizontalalignment='left', bbox={'facecolor': 'w', 'pad': 1},
              zorder=11)
@@ -87,7 +87,7 @@ def figure1():
     ax2.set_xlabel('Temperature [°C]')
     ax2.set_ylabel('Pressure [hPa]', labelpad=-5)
 
-    ax2.text(0, 1, f"b) Vienna radiosonde", fontweight='bold',
+    ax2.text(0, 1, f"(b) Vienna radiosonde", fontweight='bold',
              transform=ax2.transAxes, verticalalignment='top', fontsize=20,
              horizontalalignment='left', bbox={'facecolor': 'w', 'pad': 1},
              zorder=11)
@@ -98,7 +98,8 @@ def figure1():
     # debugging only
     # plt.show()
 
-    plt.savefig("output/figure1.png", dpi=200, bbox_inches='tight')
+    plt.savefig("output/figure1.pdf", format="pdf", dpi=300,
+                bbox_inches='tight')
     plt.close()
 
     return
