@@ -17,7 +17,7 @@ def figure2():
     # FIG 1: Time series Vienna H.W.
     initialize_mpl_style()
     fontsize_labels = 12
-    ylim = [0, 115]
+    ylim = [0, 120]
 
     fig = plt.figure(figsize=(10, 5))
     ax1 = fig.add_subplot(121)
@@ -32,6 +32,7 @@ def figure2():
 
     ax2 = fig.add_subplot(122)
     ax2 = plot_return_levels(model, ax=ax2)
+    plt.axhline(110, linestyle='--', color='k', linewidth=3)
     ax2.set_ylim(ylim)
     ax2.set_xlabel('Years', fontsize=fontsize_labels)
     ax2.set_ylabel(None)
