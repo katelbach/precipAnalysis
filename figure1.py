@@ -42,6 +42,7 @@ def figure1():
              bbox=dict(facecolor='w', edgecolor='none'))
 
     plt.tight_layout()
+    Path("output").mkdir(exist_ok=True)
     plt.savefig("output/figure1.pdf", format="pdf", dpi=300,
                 bbox_inches='tight')
     plt.close()

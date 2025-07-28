@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import cartopy.crs as ccrs
 import cmocean  # import for colormap
+from pathlib import Path
 
 from plot_helpers import initialize_mpl_style
 from inca import get_shapes
@@ -90,7 +91,9 @@ def figure3():
         ax.scatter(lon, lat, s=40, c='w', transform=ccrs.PlateCarree(),
                    edgecolors='k', linewidth=1.6, zorder=12)
 
-    plt.show()
+    Path("output").mkdir(exist_ok=True)
+    plt.savefig("output/figure3.png", dpi=300, bbox_inches='tight')
+    plt.close()
 
     return
 
