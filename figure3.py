@@ -33,7 +33,7 @@ def figure3():
     # Set the first color to white/transparent for very small values
     cmap.set_under('w', alpha=1)
 
-    cbar_kwargs = {'extend': 'both', 'label': '2 hour precipitation [mm]',
+    cbar_kwargs = {'extend': 'both', 'label': '2-hour precipitation [mm]',
                    'drawedges': True}
     title_kwargs = {'color': 'k', 'fontweight': 'bold', 'fontsize': 17,
                     'ha': 'left', 'va': 'top', 'zorder': 15,
@@ -46,7 +46,7 @@ def figure3():
         transform=ccrs.epsg(31287), ax=ax1, norm=norm, interpolation='bilinear',
         add_colorbar=False, levels=mm_levels,
         cmap=cmap, xlim=x, ylim=y)
-    ax1.text(0, 1, "Lower CI", transform=ax1.transAxes, **title_kwargs)
+    ax1.text(0, 1, "Lower CI (2.5 %)", transform=ax1.transAxes, **title_kwargs)
 
     inca_ci.isel(CI=1)['prec'].plot.imshow(
         transform=ccrs.epsg(31287), ax=ax2, norm=norm, interpolation='bilinear',
@@ -56,7 +56,7 @@ def figure3():
     im3 = inca_ci.isel(CI=2)['prec'].plot.imshow(
         transform=ccrs.epsg(31287), ax=ax3, norm=norm, interpolation='bilinear',
         add_colorbar=False, levels=mm_levels, cmap=cmap, xlim=x, ylim=y)
-    ax3.text(0, 1, "Upper CI", transform=ax3.transAxes, **title_kwargs)
+    ax3.text(0, 1, "Upper CI (97.5 %)", transform=ax3.transAxes, **title_kwargs)
 
     plt.subplots_adjust(left=0.02, bottom=0.05, top=0.95, wspace=0.1, right=0.9)
     cbar_ax = fig.add_axes((0.91, 0.15, 0.02, 0.7))
@@ -73,10 +73,10 @@ def figure3():
                        facecolor='none', zorder=3)
         ax.add_feature(provinces, linewidth=2.5, edgecolor='k',
                        facecolor='none', zorder=2)
-        ax.add_feature(rivers, linewidth=2, edgecolor='dodgerblue',
-                       facecolor='none', zorder=1)
         ax.add_feature(districts, linewidth=1, edgecolor='k',
                        facecolor='none', zorder=1, alpha=0.5)
+        ax.add_feature(rivers, linewidth=2, edgecolor='dodgerblue',
+                       facecolor='none', zorder=3)
 
     # unset auto-generated title
     for ax in [ax1, ax2, ax3]:

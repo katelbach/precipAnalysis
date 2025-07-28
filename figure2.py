@@ -26,7 +26,7 @@ def figure2():
     pm = plot_inca(
         inca_ds, time0, time1, "", filename=None, ax=ax1, add_colorbar=True,
         station_data=station_data,
-        cbar_kwargs={'extend': 'both', 'label': '2 hour precipitation [mm]',
+        cbar_kwargs={'extend': 'both', 'label': '2-hour precipitation [mm]',
                      'location': 'bottom', 'drawedges': True})
     pm.colorbar.ax.tick_params(labelsize=15)
 
