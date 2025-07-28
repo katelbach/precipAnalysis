@@ -2,6 +2,7 @@ import datetime as dt
 import pandas as pd
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
+from pathlib import Path
 
 from inca import plot_inca, read_binary_format
 from tawes import read_json_data
@@ -28,7 +29,7 @@ def figure2():
         cbar_kwargs={'extend': 'both', 'label': '2 hour precipitation [mm]',
                      'location': 'bottom', 'drawedges': True})
     pm.colorbar.ax.tick_params(labelsize=15)
-    #plot_tawes_locations(ax1, station_data, pm.get_cmap(), pm.norm)
+
     ax1.text(0, 1, f"(a) {time1:%Y-%m-%d %H:%M}", fontweight='bold',
              transform=ax1.transAxes, verticalalignment='top', fontsize=17,
              zorder=15, horizontalalignment='left',
@@ -56,14 +57,15 @@ def figure2():
         station_data = pd.DataFrame.from_dict(station_data, orient='index')
 
         plot_inca(inca_ds, time0, time1, "", filename=None, ax=ax,
-                       add_colorbar=False, y=(460000, 503000),
-                       station_data=station_data)
+                  add_colorbar=False, y=(460000, 503000),
+                  station_data=station_data)
         ax.text(0.01, 1, f"{label[i]} {time1:%Y-%m-%d %H:%M}", fontweight='bold',
                 transform=ax.transAxes, verticalalignment='top', fontsize=17,
                 horizontalalignment='left', zorder=15,
                 bbox={'facecolor': 'w', 'pad': 1, 'zorder': 14})
 
-    plt.savefig("output/figure3.png", dpi=300, bbox_inches='tight')
+    Path("output").mkdir(exist_ok=True)
+    plt.savefig("output/figure2.png", dpi=300, bbox_inches='tight')
     plt.close()
 
     return

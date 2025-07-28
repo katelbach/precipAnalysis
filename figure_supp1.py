@@ -98,7 +98,7 @@ def figure1():
     # debugging only
     # plt.show()
 
-    plt.savefig("output/figure1.pdf", format="pdf", dpi=300,
+    plt.savefig("output/figure_supp1.pdf", format="pdf", dpi=300,
                 bbox_inches='tight')
     plt.close()
 

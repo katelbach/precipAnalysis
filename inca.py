@@ -3,6 +3,7 @@ import gzip
 import numpy as np
 import xarray as xr
 import pandas as pd
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import datetime as dt
 import cartopy.crs as ccrs
@@ -10,13 +11,12 @@ import cartopy.feature as cf
 import cartopy.io.shapereader as shpreader
 from pyproj import Transformer
 from pathlib import Path
-import matplotlib.colors as colors
 import cmocean
 
 from tawes import get_json_data, read_json_data
 from plot_helpers import initialize_mpl_style
 
-mm_levels = [0.1, 2, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90,
+mm_levels = [0.5, 10, 20, 30, 40, 50, 60, 70, 80, 90,
              100, 110]
 ticklabs = [str(x) for x in mm_levels]
 lat_min, lat_max = (48.04, 48.40)
@@ -59,7 +59,10 @@ def plot_inca(ds, time0, time1, title, station_data=None, filename=None,
 
     initialize_mpl_style()
 
-    norm = colors.BoundaryNorm(boundaries=mm_levels, ncolors=256)
+    norm = mpl.colors.BoundaryNorm(boundaries=mm_levels, ncolors=256)
+    cmap = mpl.colormaps['cmo.rain']
+    # Set the first color to white/transparent for very small values
+    cmap.set_under('w', alpha=1)
 
     if ax is None:
         fig, ax = plt.subplots(1, 1, subplot_kw=dict(projection=ccrs.epsg(31287)),
@@ -73,7 +76,7 @@ def plot_inca(ds, time0, time1, title, station_data=None, filename=None,
     pm = ds_sum['RR'].plot.imshow(
         transform=ccrs.epsg(31287), ax=ax, norm=norm, interpolation='bilinear',
         cbar_kwargs=cbar_kwargs, add_colorbar=add_colorbar, levels=mm_levels,
-        cmap='cmo.rain', xlim=x, ylim=y)
+        cmap=cmap, xlim=x, ylim=y)
 
     if add_colorbar is True:
         pm.colorbar.set_ticks(ticks=mm_levels, labels=ticklabs)
@@ -83,7 +86,6 @@ def plot_inca(ds, time0, time1, title, station_data=None, filename=None,
     ds_sum['RR'].plot.contour(
         transform=ccrs.epsg(31287), ax=ax, levels=[50, 75, 100],
         linewidths=3, colors=[c50, c75, c100], zorder=11)
-
 
     for threshold, color in zip([50, 75, 100], [c50, c75, c100]):
         area = (ds_sum['RR'] > threshold).sum().values
@@ -217,7 +219,9 @@ def export_to_netcdf():
 
 if __name__ == '__main__':
 
-    export_to_netcdf()
+    print("nothing to do?")
+
+    #export_to_netcdf()
 
     # event_starttimes = [
     #     dt.datetime(2003, 5, 13, 13, 0),
