@@ -49,7 +49,7 @@ def figure1():
     # FIG 1: Return period analysis for Vienna H.W.
     initialize_mpl_style()
     fontsize_labels = 12
-    xlim = [1, 300]
+    xlim = [1, 800]
     ylim = [0, 120]
 
     fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
@@ -94,15 +94,17 @@ def figure1():
              color='cornflowerblue', linewidth=1)
     ax2.plot(model_quantiles["rp"], model_quantiles['bound.0.975'], "--",
              color='cornflowerblue', linewidth=1)
+    ax2.plot(model_quantiles['rp'], model_quantiles['mean_estimate'],
+             color='r', linewidth=2)
 
     ax2.axhline(107, linestyle='--', color='k', linewidth=2.5)
-    ax2.scatter(obs_quantiles['rp'], obs_quantiles['obs'], s=15, color='r',
+    ax2.scatter(obs_quantiles['rp'], obs_quantiles['obs'], s=15, color='k',
                 edgecolor='w')
 
     ax2.set_xlim(xlim)
     ax2.set_ylim(ylim)
 
-    ax2.set_xticks([1, 2, 5, 10, 30, 50, 100, 200])
+    ax2.set_xticks([1, 2, 5, 10, 30, 50, 100, 200, 500])
     ax2.set_xlabel('Years', fontsize=fontsize_labels)
     ax2.set_ylabel(None)
     ax2.text(0, 1, '(b) Return periods 2h RR', ha='left', va='top',

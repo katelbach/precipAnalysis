@@ -9,6 +9,8 @@ import cartopy.crs as ccrs
 import cmocean  # import for colormap
 from pathlib import Path
 
+from metpy.io import station_data
+
 from plot_helpers import initialize_mpl_style
 from inca import get_shapes
 
@@ -72,6 +74,17 @@ def figure3():
         transform=ccrs.epsg(31287), ax=ax3, norm=norm, interpolation='bilinear',
         add_colorbar=False, levels=mm_levels, cmap=cmap, xlim=x, ylim=y)
     ax3.text(0, 1, "Upper CI (97.5 %)", transform=ax3.transAxes, **title_kwargs)
+
+    for i, ax in enumerate([ax1, ax2, ax3]):
+        axtext = (f"Max {inca_ci.isel(CI=i)['prec'].max().values:.0f} mm\n"
+                   f"Avg {inca_ci.isel(CI=i)['prec'].mean():.0f} mm\n"
+                   f"Min  {inca_ci.isel(CI=i)['prec'].min():.0f} mm")
+        ax.text(
+            0.0, 0, axtext,
+            color='k', fontweight='bold', ha="left", va="bottom", zorder=15,
+            fontsize=13,
+            bbox={'facecolor': 'w', 'pad': 0.5, 'zorder': 14, 'alpha': 1.0},
+            transform=ax.transAxes)
 
     plt.subplots_adjust(left=0.02, bottom=0.05, top=0.95, wspace=0.1, right=0.9)
     cbar_ax = fig.add_axes((0.91, 0.15, 0.02, 0.7))

@@ -141,16 +141,6 @@ def plot_tawes(ax, station_data, cmap, norm):
                norm=norm, edgecolors='w', linewidth=1.6, zorder=12)
     return ax
 
-# def plot_tawes_data(ax, station_data):
-#
-#     for station in station_data:
-#         lon, lat = (station_data[station]['lon'], station_data[station]['lat'])
-#         rr = np.round(station_data[station]['rr'], 1)
-#         ax.scatter(lon, lat, color='k',transform=ccrs.PlateCarree())
-#         ax.text(lon, lat+0.004, rr, ha='center', fontsize=12,
-#                 transform=ccrs.PlateCarree())
-#     return
-
 
 def read_binary_format(inca_path, time0, time1):
 
