@@ -17,7 +17,7 @@ from tawes import get_json_data, read_json_data
 from plot_helpers import initialize_mpl_style
 
 mm_levels = [0.5, 10, 20, 30, 40, 50, 60, 70, 80, 90,
-             100, 110]
+             100]
 ticklabs = [str(x) for x in mm_levels]
 lat_min, lat_max = (48.04, 48.40)
 lon_min, lon_max = (16.10, 16.67)
@@ -59,7 +59,8 @@ def plot_inca(ds, time0, time1, title, station_data=None, filename=None,
 
     initialize_mpl_style()
 
-    norm = mpl.colors.BoundaryNorm(boundaries=mm_levels, ncolors=256)
+    norm = mpl.colors.BoundaryNorm(boundaries=mm_levels, ncolors=256,
+                                   extend='both')
     cmap = mpl.colormaps['cmo.rain']
     # Set the first color to white/transparent for very small values
     cmap.set_under('w', alpha=1)

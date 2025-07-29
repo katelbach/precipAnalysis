@@ -11,16 +11,32 @@ from pathlib import Path
 
 from plot_helpers import initialize_mpl_style
 from inca import get_shapes
-from tawes import read_json_data
 
 
-mm_levels = [0.5, 10, 20, 30, 40, 50, 60, 70, 80, 90,
-             100, 110]
+mm_levels = [40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]
 ticklabs = [str(x) for x in mm_levels]
+
+station_metadata = {
+    'Wien Hohe Warte': (48.24861,16.35639),
+    'Wien Mariabrunn': (48.20694351, 16.2294445),
+    'Wien Unterlaa': (48.125, 16.41944313),
+    'Wien Jubiläumswarte': (48.2211113, 16.26527786),
+    'Brunn am Gebirge': (48.10694504, 16.26999855),
+    'Wien Innere Stadt': (48.19833374, 16.36694336),
+    'Wien Donaufeld': (48.25722122, 16.43138885),
+    'Schwechat Flughafen': (48.11750031, 16.58138847),
+    'Groß Enzersdorf': (48.19972229, 16.55916595),
+    'Wien Stammersdorf': (48.30583191, 16.40555573),
+    'Langenlebarn': (48.32388687, 16.11805534)
+}
 
 def figure3():
 
     inca_ci = xr.open_dataset("data/review/inca_ci.nc")
+    station_ci = pd.read_csv("data/review/stations_ci_100year.csv")
+
+    station_ci[['lat', 'lon']] = station_ci['station'].map(
+        station_metadata).apply(pd.Series)
 
     initialize_mpl_style()
 
@@ -28,10 +44,9 @@ def figure3():
         nrows=1, ncols=3, figsize=(14, 5),
         subplot_kw=dict(projection=ccrs.epsg(31287)))
 
-    norm = mpl.colors.BoundaryNorm(boundaries=mm_levels, ncolors=256)
-    cmap = mpl.colormaps['cmo.rain']
-    # Set the first color to white/transparent for very small values
-    cmap.set_under('w', alpha=1)
+    norm = mpl.colors.BoundaryNorm(boundaries=mm_levels, ncolors=256,
+                                   extend='both')
+    cmap = mpl.colormaps['viridis_r']
 
     cbar_kwargs = {'extend': 'both', 'label': '2-hour precipitation [mm]',
                    'drawedges': True}
@@ -83,13 +98,15 @@ def figure3():
         ax.set_title("")
 
     # plot TAWES locations
-    station_data = read_json_data(f"data/20240817/tawes.json")
-    station_data = pd.DataFrame.from_dict(station_data, orient='index')
+    lon, lat, mean, c_low, c_high = (
+        station_ci['lon'], station_ci['lat'],
+        station_ci['mean_estimate'], station_ci['bound.0.025'],
+        station_ci['bound.0.975'])
 
-    lon, lat = (station_data['lon'], station_data['lat'])
-    for ax in [ax1, ax2, ax3]:
-        ax.scatter(lon, lat, s=40, c='w', transform=ccrs.PlateCarree(),
-                   edgecolors='k', linewidth=1.6, zorder=12)
+    for ax, val in zip([ax1, ax2, ax3], [c_low, mean, c_high]):
+        ax.scatter(lon, lat, s=70, c=val, transform=ccrs.PlateCarree(),
+                   cmap=cmap, norm=norm, edgecolors='w', linewidth=1.6,
+                   zorder=12)
 
     Path("output").mkdir(exist_ok=True)
     plt.savefig("output/figure3.png", dpi=300, bbox_inches='tight')

@@ -45,8 +45,8 @@ def figure2():
         dt.datetime(2008, 5, 18, 13, 0) # 51,6 mm
     ]
     # next-ranking smaller events (same colorbar!)
-    axs2 = subfigs[1].subplots(2, 2,
-                               subplot_kw=dict(projection=ccrs.epsg(31287)))
+    axs2 = subfigs[1].subplots(
+        2, 2, subplot_kw=dict(projection=ccrs.epsg(31287)))
 
     label = ["(b)", "(c)", "(d)", "(e)"]
     for i, ax in enumerate(axs2.flatten()):
