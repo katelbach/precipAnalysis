@@ -13,36 +13,10 @@ from plot_helpers import initialize_mpl_style
 
 def figure1():
 
-    # OLD CODE
-    # df = read_csv_data()
-    # model = evt_analysis(df)
-
-    # fig = plt.figure(figsize=(10, 5))
-    # ax1 = fig.add_subplot(121)
-    # ax1 = plot_timeseries(df, ax=ax1)
-    # ax1.set_ylim(ylim)
-    # ax1.set_xlabel('Year', fontsize=fontsize_labels)
-    # ax1.set_ylabel('mm', fontsize=fontsize_labels)
-    # ax1.text(0, 1, '(a) Annual max 2h RR', ha='left', va='top',
-    #          transform=ax1.transAxes,
-    #          zorder=12, fontweight='bold',
-    #          bbox=dict(facecolor='w', edgecolor='none'))
-    #
-    # ax2 = fig.add_subplot(122)
-    # ax2 = plot_return_levels(model, ax=ax2)
-    # plt.axhline(107, linestyle='--', color='k', linewidth=3)
-    # ax2.set_ylim(ylim)
-    # ax2.set_xlabel('Years', fontsize=fontsize_labels)
-    # ax2.set_ylabel(None)
-    # ax2.text(0, 1, '(b) Return periods 2h RR', ha='left', va='top',
-    #          transform=ax2.transAxes,
-    #          zorder=12, fontweight='bold',
-    #          bbox=dict(facecolor='w', edgecolor='none'))
-
-
     obs_timeseries = read_csv_data()
 
-    obs_quantiles = pd.read_csv("data/review/vienna_hohe-warte_emp_quantiles.csv")
+    obs_quantiles = pd.read_csv(
+        "data/review/vienna_hohe-warte_emp_quantiles.csv")
     model_quantiles = pd.read_csv(
         "data/review/vienna_hohe-warte_theo_quantiles_and_ci.csv")
 
@@ -54,7 +28,7 @@ def figure1():
 
     fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
 
-    # SUBPLOT A: Time series
+    # SUBPLOT A: Time series of daily 2hr RR maximum
     rr_2h = obs_timeseries['2H_SUM'].dropna()
     ax1.plot(rr_2h.index, rr_2h, ls="-", color="cornflowerblue",
              lw=0.25, zorder=10)
@@ -76,20 +50,22 @@ def figure1():
 
     ax1.set_xlabel('Year', fontsize=fontsize_labels)
     ax1.set_ylabel('mm', fontsize=fontsize_labels)
-    ax1.text(0, 1, '(a) Annual max 2h RR', ha='left', va='top',
+    ax1.text(0, 1, '(a) Max 2h RR', ha='left', va='top',
              transform=ax1.transAxes,
              zorder=12, fontweight='bold',
              bbox=dict(facecolor='w', edgecolor='none'))
 
 
-    # SUBPLOT B: Return periods
+    # SUBPLOT B: Return periods for Hohe Warte
     ax2.set_xscale('log')
     ax2.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"{x:,.0f}"))
 
     ax2.fill_between(model_quantiles["rp"], model_quantiles['bound.0.25'],
-                     model_quantiles['bound.0.75'], alpha=.4, color='cornflowerblue')
+                     model_quantiles['bound.0.75'], alpha=.4,
+                     color='cornflowerblue')
     ax2.fill_between(model_quantiles["rp"], model_quantiles['bound.0.025'],
-                     model_quantiles['bound.0.975'], alpha=.2, color='cornflowerblue')
+                     model_quantiles['bound.0.975'], alpha=.2,
+                     color='cornflowerblue')
     ax2.plot(model_quantiles["rp"], model_quantiles['bound.0.025'], "--",
              color='cornflowerblue', linewidth=1)
     ax2.plot(model_quantiles["rp"], model_quantiles['bound.0.975'], "--",
