@@ -144,24 +144,25 @@ def plot_tawes(ax, station_data, cmap, norm):
 
 def read_binary_format(inca_path, time0, time1):
 
-    if time0 > dt.datetime(2012, 1, 1):
-        coords = xr.open_dataset("data/georef.nc")
-        data = coords.set_coords(["lat", "lon"])
+    if time0 > dt.datetime(2011, 1, 1):
+        # coords = xr.open_dataset("data/georef.nc")
+        # data = coords.set_coords(["lat", "lon"])
+        x = np.arange(20*1000, 721*1000, 1000)
+        y = np.arange(220*1000, 621*1000, 1000)
     else:
-        transformer = Transformer.from_crs("epsg:31287", "epsg:4326")
-
         x = np.arange(100*1000, 701*1000, 1000)
         y = np.arange(250*1000, 601*1000, 1000)
 
-        xx, yy = np.meshgrid(x, y)
-        lon, lat = transformer.transform(xx, yy)
+    transformer = Transformer.from_crs("epsg:31287", "epsg:4326")
+    xx, yy = np.meshgrid(x, y)
+    lon, lat = transformer.transform(xx, yy)
 
-        data = xr.Dataset(
-            coords={
-            "x": ("x", x),
-            "y": ("y", y),
-            "lon": (("y", "x"), lon),
-            "lat": (("y", "x"), lat)})
+    data = xr.Dataset(
+        coords={
+        "x": ("x", x),
+        "y": ("y", y),
+        "lon": (("y", "x"), lon),
+        "lat": (("y", "x"), lat)})
 
     times = list()
     n = int((time1-time0).total_seconds()/60/15)
@@ -210,11 +211,11 @@ def export_to_netcdf():
 
 if __name__ == '__main__':
 
-    print("nothing to do?")
+    #print("nothing to do?")
 
     #export_to_netcdf()
 
-    # event_starttimes = [
+    event_starttimes = [
     #     dt.datetime(2003, 5, 13, 13, 0),
     #     dt.datetime(2004, 7, 1, 14, 0),
     #     dt.datetime(2007, 8, 9, 17, 0),
@@ -223,26 +224,29 @@ if __name__ == '__main__':
     #     dt.datetime(2010, 5, 13, 14, 0),
     #     dt.datetime(2011, 6, 8, 11, 0),
     #     dt.datetime(2011, 7, 28, 10, 0)
-    #
-    #     # dt.datetime(2014, 4, 29, 13, 0),
-    #     # dt.datetime(2014, 5, 24, 13, 0),
-    #     # dt.datetime(2018, 5, 2, 19, 0),
-    #     # dt.datetime(2021, 7, 17, 18, 0),
-    #     # dt.datetime(2024, 8, 17, 14, 0)
-    # ]
+    #    dt.datetime(2011, 9, 14)
+    #     dt.datetime(2014, 4, 29, 13, 0),
+    #     dt.datetime(2014, 5, 24, 13, 0),
+        dt.datetime(2014, 8, 9, 14, 0),
+    #     dt.datetime(2018, 5, 2, 19, 0),
+    #     dt.datetime(2021, 7, 17, 18, 0),
+    #     dt.datetime(2024, 8, 17, 14, 0)
+    ]
 
-    # for time0 in event_starttimes:
-    #     time1 = time0 + dt.timedelta(hours=2)
-    #
-    #     if Path(f"data/{time0:%Y%m%d}/tawes.json").exists():
-    #         pass
-    #     else:
-    #         get_json_data(time0, time1)
-    #     station_data = read_json_data(f"data/{time0:%Y%m%d}/tawes.json")
-    #     ds = read_binary_format(f"data/{time0:%Y%m%d}",
-    #                             time0 + dt.timedelta(minutes=15),
-    #                             time1)
-    #     plot_title = f"{time0:%Y%m%d %H%M}-{time1:%H%M} UTC"
-    #     plot_inca(ds, time0, time1, plot_title,
-    #               filename=f'output/INCA_RR_{time0:%Y%m%d}.png',
-    #               station_data=station_data)
+    for time0 in event_starttimes:
+        time1 = time0 + dt.timedelta(hours=2)
+
+        if Path(f"data/{time0:%Y%m%d}/tawes.json").exists():
+            pass
+        else:
+            get_json_data(time0, time1)
+        station_data = read_json_data(f"data/{time0:%Y%m%d}/tawes.json")
+        station_data = pd.DataFrame.from_dict(station_data, orient='index')
+
+        ds = read_binary_format(f"data/{time0:%Y%m%d}",
+                                time0 + dt.timedelta(minutes=15),
+                                time1)
+        plot_title = f"{time0:%Y%m%d %H%M}-{time1:%H%M} UTC"
+        plot_inca(ds, time0, time1, plot_title,
+                  filename=f'output/INCA_RR_{time0:%Y%m%d}.png',
+                  station_data=station_data)
