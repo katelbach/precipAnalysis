@@ -58,6 +58,7 @@ def get_json_data(time0, time1):
     remaining_download_tries = 5
     while remaining_download_tries > 0:
         try:
+            print("fetching TAWES data from GeoSphere datahub")
             urlretrieve(api_url, filepath)
             break
         except urllib.error.HTTPError:
