@@ -34,7 +34,13 @@ def read_json_data(filepath):
         if station['properties']['parameters']['rr']['data'][0] is None:
             continue
 
-        rr_sum = np.sum(station['properties']['parameters']['rr']['data'])
+        try:
+            rr_sum = np.sum(station['properties']['parameters']['rr']['data'])
+        except Exception as e:
+            print(e)
+            print(f"invalid values for station {station_id}")
+            continue
+
         rr_data[station_id] = {'lat': lat, 'lon': lon, 'rr': rr_sum}
 
     return rr_data
