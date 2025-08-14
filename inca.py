@@ -12,6 +12,9 @@ import cartopy.io.shapereader as shpreader
 from pyproj import Transformer
 from pathlib import Path
 import cmocean
+from urllib.request import urlretrieve
+import urllib.error
+import time
 
 from tawes import get_json_data, read_json_data
 from plot_helpers import initialize_mpl_style
@@ -142,7 +145,39 @@ def plot_tawes(ax, station_data, cmap, norm):
     return ax
 
 
-def read_binary_format(inca_path, time0, time1):
+def get_inca_from_datahub(date, min_lat, max_lat, min_lon, max_lon):
+    # get INCA timesteps from 01 UTC (corresponds to 00-01 UTC rain sum) to 24
+    # UTC (23-24 UTC)
+    t0 = dt.datetime(date.year, date.month, date.day, 1, 0)
+    t1 = (t0 + dt.timedelta(hours=23))
+
+    url = (f"https://dataset.api.hub.geosphere.at/v1/grid/historical/inca-v1"
+           f"-1h-1km"
+           f"?parameters=RR"
+           f"&start={t0:%Y-%m-%dT%H:%M}"
+           f"&end={t1:%Y-%m-%dT%H:%M}"
+           f"&bbox={min_lat},{min_lon},{max_lat},{max_lon}"
+           f"&output_format=netcdf")
+    filepath = Path("data", f"{date:%Y%m%d}",
+                    f"INCA_RR_DATAHUB_{date:%Y%m%d}.nc")
+    
+    remaining_download_tries = 5
+    while remaining_download_tries > 0:
+        try:
+            urlretrieve(url, filepath)
+            break
+        except urllib.error.HTTPError:
+            print("retrying URL request")
+            remaining_download_tries -= 1
+            time.sleep(0.8)
+            continue
+
+    if remaining_download_tries == 0:
+        raise urllib.error.HTTPError
+    return
+
+
+def read_binary_format(inca_path, time0, time1, timestep=15):
 
     if time0 > dt.datetime(2011, 1, 1):
         # coords = xr.open_dataset("data/georef.nc")
@@ -165,14 +200,19 @@ def read_binary_format(inca_path, time0, time1):
         "lat": (("y", "x"), lat)})
 
     times = list()
-    n = int((time1-time0).total_seconds()/60/15)
+    n = int((time1-time0).total_seconds()/60/timestep)
 
     rr = np.empty((n+1, data.y.size, data.x.size))
     i = 0
 
     time = time0
     while time <= time1:
-        file = Path(inca_path, f"INCA_RR-{time:%H%M}.asc.gz")
+        if timestep == 15:
+            file = Path(inca_path, f"INCA_RR-{time:%H%M}.asc.gz")
+        elif timestep == 60:
+            file = Path(inca_path, f"INCA_RR-{time:%H}.asc.gz")
+        else:
+            raise ValueError(f"timestep {timestep} not supported")
         with gzip.open(file, 'rb') as f:
             x = f.read()
             x = np.fromstring(x, sep=' ')
@@ -181,12 +221,12 @@ def read_binary_format(inca_path, time0, time1):
 
             times.append(time)
 
-        time += dt.timedelta(minutes=15)
+        time += dt.timedelta(minutes=timestep)
         i += 1
 
     data.coords["time"] = pd.to_datetime(times)
     data["RR"] = (["time", "y", "x"], rr)
-    data.attrs['freq'] = '15m'
+    data.attrs['freq'] = f'{timestep}m'
 
     return data
 
@@ -211,9 +251,15 @@ def export_to_netcdf():
 
 if __name__ == '__main__':
 
-    #print("nothing to do?")
-
     #export_to_netcdf()
+
+    use_datahub_inca = False
+    use_internal_inca = False
+    use_internal_inca_60 = True
+
+    lat0, lat1 = (48.04, 48.40)
+    lon0, lon1 = (16.10, 16.67)
+    event_hours = 24
 
     event_starttimes = [
     #     dt.datetime(2003, 5, 13, 13, 0),
@@ -227,14 +273,22 @@ if __name__ == '__main__':
     #    dt.datetime(2011, 9, 14)
     #     dt.datetime(2014, 4, 29, 13, 0),
     #     dt.datetime(2014, 5, 24, 13, 0),
-        dt.datetime(2014, 8, 9, 14, 0),
     #     dt.datetime(2018, 5, 2, 19, 0),
     #     dt.datetime(2021, 7, 17, 18, 0),
     #     dt.datetime(2024, 8, 17, 14, 0)
     ]
 
+    event_starttimes = [
+        dt.datetime(2014, 7, 15, 0, 0)
+        # dt.datetime(2018, 7, 21, 0, 0),
+        # dt.datetime(2019, 9, 1, 0, 0),
+        # dt.datetime(2021, 7, 17, 0, 0),
+        # dt.datetime(2021, 8, 16, 0, 0),
+        # dt.datetime(2024, 8, 17, 0, 0),
+    ]
+
     for time0 in event_starttimes:
-        time1 = time0 + dt.timedelta(hours=2)
+        time1 = time0 + dt.timedelta(hours=event_hours)
 
         if Path(f"data/{time0:%Y%m%d}/tawes.json").exists():
             pass
@@ -243,10 +297,37 @@ if __name__ == '__main__':
         station_data = read_json_data(f"data/{time0:%Y%m%d}/tawes.json")
         station_data = pd.DataFrame.from_dict(station_data, orient='index')
 
-        ds = read_binary_format(f"data/{time0:%Y%m%d}",
-                                time0 + dt.timedelta(minutes=15),
-                                time1)
-        plot_title = f"{time0:%Y%m%d %H%M}-{time1:%H%M} UTC"
-        plot_inca(ds, time0, time1, plot_title,
-                  filename=f'output/INCA_RR_{time0:%Y%m%d}.png',
-                  station_data=station_data)
+        if use_datahub_inca:
+            output_file = f'output/INCA_DATAHUB_RR_{time0:%Y%m%d}.png'
+            plot_title = f"DATAHUB {time0:%Y%m%d %H%M}-{time1:%H%M} UTC"
+            datahub_file = (f"data/{time0:%Y%m%d}/INCA_RR_DATAHUB_"
+                            f"{time0:%Y%m%d}.nc")
+
+            if Path(datahub_file).exists():
+                pass
+            else:
+                get_inca_from_datahub(
+                    time0, min_lat=lat0, max_lat=lat1, min_lon=lon0,
+                    max_lon=lon1)
+            ds = xr.open_dataset(datahub_file)
+            plot_inca(ds, time0, time1, plot_title,
+                      filename=output_file, station_data=station_data)
+
+        if use_internal_inca:
+            output_file = f'output/INCA_RR_{time0:%Y%m%d}.png'
+            plot_title = f"{time0:%Y%m%d %H%M}-{time1:%H%M} UTC"
+            ds = read_binary_format(
+                f"data/{time0:%Y%m%d}", time0 + dt.timedelta(minutes=15),
+                time1)
+            plot_inca(ds, time0, time1, plot_title,
+                      filename=output_file, station_data=station_data)
+
+        if use_internal_inca_60:
+            output_file = f'output/INCA_60m_RR_{time0:%Y%m%d}.png'
+            plot_title = f"INCA 1h {time0:%Y%m%d %H%M}-{time1:%H%M} UTC"
+            ds = read_binary_format(
+                f"data/{time0:%Y%m%d}",
+                time0 + dt.timedelta(minutes=60),
+                time1, timestep=60)
+            plot_inca(ds, time0, time1, plot_title,
+                      filename=output_file, station_data=station_data)
