@@ -15,7 +15,7 @@ from plot_helpers import initialize_mpl_style
 from radiosonde import get_profile
 
 
-def figure1():
+def figure_supp1():
     filename_geopot = "data/20240817/geopot.grib"
     geopot = xr.open_dataset(filename_geopot, engine='cfgrib')
     filename_mslp = "data/20240817/mslp.grib"
@@ -206,4 +206,4 @@ def _closest_argmin(A, B):
 
 
 if __name__ == '__main__':
-    figure1()
+    figure_supp1()

@@ -177,16 +177,35 @@ def get_inca_from_datahub(date, min_lat, max_lat, min_lon, max_lon):
     return
 
 
-def read_binary_format(inca_path, time0, time1, timestep=15):
+def read_binary_inca(filename: Path | str, old_grid: bool=False) -> np.ndarray:
+
+    if old_grid:
+        y_size, x_size = (351, 601)
+    else:
+        y_size, x_size = (401, 701)
+
+    rr = np.empty((y_size, x_size))
+
+    with gzip.open(filename, 'rb') as f:
+        x = f.read()
+        x = np.fromstring(x, sep=' ')
+        rr_temp = np.reshape(x, (y_size, x_size))
+        rr[:, :] = rr_temp
+
+    return rr
+
+def sum_binary_inca(inca_path: str | Path,
+                    time0: dt.datetime, time1: dt.datetime,
+                    timestep: int=15) -> xr.Dataset:
 
     if time0 > dt.datetime(2011, 1, 1):
-        # coords = xr.open_dataset("data/georef.nc")
-        # data = coords.set_coords(["lat", "lon"])
         x = np.arange(20*1000, 721*1000, 1000)
         y = np.arange(220*1000, 621*1000, 1000)
+        old_grid = False
     else:
         x = np.arange(100*1000, 701*1000, 1000)
         y = np.arange(250*1000, 601*1000, 1000)
+        old_grid = True
 
     transformer = Transformer.from_crs("epsg:31287", "epsg:4326")
     xx, yy = np.meshgrid(x, y)
@@ -202,7 +221,7 @@ def read_binary_format(inca_path, time0, time1, timestep=15):
     times = list()
     n = int((time1-time0).total_seconds()/60/timestep)
 
-    rr = np.empty((n+1, data.y.size, data.x.size))
+    rr_sum = np.empty((n+1, data.y.size, data.x.size))
     i = 0
 
     time = time0
@@ -213,22 +232,19 @@ def read_binary_format(inca_path, time0, time1, timestep=15):
             file = Path(inca_path, f"INCA_RR-{time:%H}.asc.gz")
         else:
             raise ValueError(f"timestep {timestep} not supported")
-        with gzip.open(file, 'rb') as f:
-            x = f.read()
-            x = np.fromstring(x, sep=' ')
-            rr_temp = np.reshape(x, (data.y.size, data.x.size))
-            rr[i, :, :] = rr_temp
 
-            times.append(time)
+        rr_sum[i, :, :] = read_binary_inca(file, old_grid=old_grid)
+        times.append(time)
 
         time += dt.timedelta(minutes=timestep)
         i += 1
 
     data.coords["time"] = pd.to_datetime(times)
-    data["RR"] = (["time", "y", "x"], rr)
+    data["RR"] = (["time", "y", "x"], rr_sum)
     data.attrs['freq'] = f'{timestep}m'
 
     return data
+
 
 def export_to_netcdf():
     start = dt.datetime(2023, 4, 1)
@@ -242,7 +258,7 @@ def export_to_netcdf():
         time0 = current_day
         time1 = current_day + dt.timedelta(hours=23, minutes=59)
 
-        daily_data = read_binary_format(inca_path, time0, time1)
+        daily_data = sum_binary_inca(inca_path, time0, time1)
         daily_data.to_netcdf(Path("output", "INCA", f"{current_day:%Y%m%d}.nc"), encoding=encode)
 
         current_day += dt.timedelta(days=1)
@@ -254,12 +270,12 @@ if __name__ == '__main__':
     #export_to_netcdf()
 
     use_datahub_inca = False
-    use_internal_inca = False
-    use_internal_inca_60 = True
+    use_internal_inca = True
+    use_internal_inca_60 = False
 
     lat0, lat1 = (48.04, 48.40)
     lon0, lon1 = (16.10, 16.67)
-    event_hours = 24
+    event_hours = 2
 
     event_starttimes = [
     #     dt.datetime(2003, 5, 13, 13, 0),
@@ -270,21 +286,14 @@ if __name__ == '__main__':
     #     dt.datetime(2010, 5, 13, 14, 0),
     #     dt.datetime(2011, 6, 8, 11, 0),
     #     dt.datetime(2011, 7, 28, 10, 0)
-    #    dt.datetime(2011, 9, 14)
+    #     dt.datetime(2011, 9, 14, 0, 0)
     #     dt.datetime(2014, 4, 29, 13, 0),
     #     dt.datetime(2014, 5, 24, 13, 0),
+    #     dt.datetime(2014, 7, 15, 0, 0),
     #     dt.datetime(2018, 5, 2, 19, 0),
+        dt.datetime(2020, 6, 3, 13, 0)
     #     dt.datetime(2021, 7, 17, 18, 0),
     #     dt.datetime(2024, 8, 17, 14, 0)
-    ]
-
-    event_starttimes = [
-        dt.datetime(2014, 7, 15, 0, 0)
-        # dt.datetime(2018, 7, 21, 0, 0),
-        # dt.datetime(2019, 9, 1, 0, 0),
-        # dt.datetime(2021, 7, 17, 0, 0),
-        # dt.datetime(2021, 8, 16, 0, 0),
-        # dt.datetime(2024, 8, 17, 0, 0),
     ]
 
     for time0 in event_starttimes:
@@ -316,7 +325,7 @@ if __name__ == '__main__':
         if use_internal_inca:
             output_file = f'output/INCA_RR_{time0:%Y%m%d}.png'
             plot_title = f"{time0:%Y%m%d %H%M}-{time1:%H%M} UTC"
-            ds = read_binary_format(
+            ds = sum_binary_inca(
                 f"data/{time0:%Y%m%d}", time0 + dt.timedelta(minutes=15),
                 time1)
             plot_inca(ds, time0, time1, plot_title,
@@ -325,7 +334,7 @@ if __name__ == '__main__':
         if use_internal_inca_60:
             output_file = f'output/INCA_60m_RR_{time0:%Y%m%d}.png'
             plot_title = f"INCA 1h {time0:%Y%m%d %H%M}-{time1:%H%M} UTC"
-            ds = read_binary_format(
+            ds = sum_binary_inca(
                 f"data/{time0:%Y%m%d}",
                 time0 + dt.timedelta(minutes=60),
                 time1, timestep=60)

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 from pathlib import Path
 
-from inca import plot_inca, read_binary_format
+from inca import plot_inca, sum_binary_inca
 from tawes import read_json_data
 
 # FIG2: 5 subplots, left big: Main event, right small: four next-largest events (sorted by max 2h RR)
@@ -72,7 +72,7 @@ def figure2():
 
 
 def get_data(time0, time1):
-    ds = read_binary_format(
+    ds = sum_binary_inca(
         f"data/{time0:%Y%m%d}", time0 + dt.timedelta(minutes=15), time1)
     return ds
 
